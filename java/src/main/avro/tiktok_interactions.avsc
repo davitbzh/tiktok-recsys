@@ -1,0 +1,66 @@
+{
+    "type" : "record",
+    "name" : "SourceInteractions",
+    "namespace" : "ai.hopsworks.tutorials.flink.tiktok.features",
+    "fields": [
+        {
+            "name": "interaction_id",
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        {
+            "name": "user_id",
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        {
+            "name": "video_id",
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        {
+            "name": "video_category",
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        {
+            "name": "interaction_type",
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        {
+            "name": "watch_time",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "name": "interaction_date",
+            "type": [
+                "null",
+                {
+                    "type": "long",
+                    "logicalType": "timestamp-micros"
+                }
+            ]
+        },
+        {
+            "name": "interaction_day",
+            "type": [
+                "null",
+                "string"
+            ]
+        }
+    ]
+}
