@@ -17,8 +17,7 @@ public class InteractionsEventsSimulator extends RichParallelSourceFunction<TikT
     private final Random randomLetter = new Random();
 
     private final List<String> interactionTypes = Arrays.asList("like", "view", "dislike", "comment", "share", "skip");
-    private final List<String> videoCategories = Arrays.asList("Education", "Entertainment", "Lifestyle", "Music",
-            "News",  "Sports", "Technology", "Dance", "Cooking", "Comedy", "Travel");
+    private final List<Long> videoCategories = Arrays.asList(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 11L);
     public static final int SLEEP_MILLIS_PER_EVENT = 5;
     private volatile boolean running = true;
 
@@ -43,7 +42,7 @@ public class InteractionsEventsSimulator extends RichParallelSourceFunction<TikT
                 eventTime = Instant.now().toEpochMilli();
                 event = interactionEventGenerator(interactionIdGenerator(), userIdGenerator(), videoIdGenerator(),
                         videoCategoryTypeGenerator(), interactionTypeGenerator(), watchTimeGenerator(), eventTime,
-                        timestampDayGenerator(eventTime));
+                        timestampMonthGenerator(eventTime));
                 events.add(event);
             }
 
@@ -98,7 +97,7 @@ public class InteractionsEventsSimulator extends RichParallelSourceFunction<TikT
         return interactionTypes.get(randomNumber.nextInt(interactionTypes.size()));
     }
 
-    private String videoCategoryTypeGenerator() {
+    private Long videoCategoryTypeGenerator() {
         return videoCategories.get(randomNumber.nextInt(interactionTypes.size()));
     }
 
@@ -130,22 +129,22 @@ public class InteractionsEventsSimulator extends RichParallelSourceFunction<TikT
 
     }
 
-    private String timestampDayGenerator(long timestamp){
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    private String timestampMonthGenerator(long timestamp){
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
         return dateFormat.format(timestamp);
     }
 
     private TikTokInteractions interactionEventGenerator(String interactionId, String userId, String videoId,
-                                                         String videoCategory, String interactionType, Long watchTime,
-                                                         Long interactionDate, String interactionDay) {
+                                                         Long videoCategory, String interactionType, Long watchTime,
+                                                         Long interactionDate, String interactionMonth) {
         TikTokInteractions tikTokInteractions = new TikTokInteractions();
         tikTokInteractions.setInteractionId(interactionId);
         tikTokInteractions.setUserId(userId);
         tikTokInteractions.setVideoId(videoId);
-        tikTokInteractions.setVideoCategory(videoCategory);
+        tikTokInteractions.setCategoryId(videoCategory);
         tikTokInteractions.setInteractionType(interactionType);
         tikTokInteractions.setInteractionDate(interactionDate);
-        tikTokInteractions.setInteractionDay(interactionDay);
+        tikTokInteractions.setInteractionMonth(interactionMonth);
         tikTokInteractions.setWatchTime(watchTime);
         return tikTokInteractions;
     }

@@ -1,16 +1,14 @@
 package ai.hopsworks.tutorials.flink.tiktok.utils;
 
-import java.time.Instant;
-
 public class TikTokInteractions {
     private String interactionId;
     private String userId;
     private String videoId;
-    private String videoCategory;
+    private Long categoryId;
     private String interactionType;
     private Long watchTime;
     private Long interactionDate;
-    private String interactionDay;
+    private String interactionMonth;
 
 
     public void setInteractionId(String interactionId) {
@@ -37,12 +35,12 @@ public class TikTokInteractions {
         return videoId;
     }
 
-    public void setVideoCategory(String videoCategory) {
-        this.videoCategory = videoCategory;
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
 
-    public String getVideoCategory() {
-        return videoCategory;
+    public Long getCategoryId() {
+        return categoryId;
     }
 
     public void setInteractionType(String interactionType) {
@@ -69,11 +67,11 @@ public class TikTokInteractions {
         return interactionDate;
     }
 
-    public void setInteractionDay(String interactionDay) {
-        this.interactionDay = interactionDay;
+    public void setInteractionMonth(String interactionMonth) {
+        this.interactionMonth = interactionMonth;
     }
 
-    public String getInteractionDay() {
-        return interactionDay;
+    public String getInteractionMonth() {
+        return interactionMonth;
     }
 }

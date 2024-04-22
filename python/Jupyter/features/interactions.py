@@ -41,6 +41,8 @@ def generate_interactions(num_interactions: int, users: List[Dict[str, str]], vi
         days_since_earliest = (datetime.now() - earliest_date).days
         random_days = random.randint(0, days_since_earliest)
         interaction_date = earliest_date + timedelta(days=random_days)
+        
+        previous_interaction_date = interaction_date - timedelta(days=random.randint(0, random.randint(0, 90)))
 
         interaction_types = ['like', 'dislike', 'view', 'comment', 'share', 'skip']
         weights = [1.5, 0.2, 3, 0.5, 0.8, 10]
@@ -59,11 +61,13 @@ def generate_interactions(num_interactions: int, users: List[Dict[str, str]], vi
             'interaction_id': generic.person.identifier(mask='####-##-####'),
             'user_id': user['user_id'],
             'video_id': video['video_id'],
-            'video_category': video['category'],
+            'category_id': video['category_id'],
             'interaction_type': random.choices(interaction_types, weights=weights, k=1)[0],
             'watch_time': watch_time,
+#            'watched_till_end': 1 if watch_time >= video['video_length'] else 0,           
             'interaction_date': interaction_date.strftime(config.DATE_TIME_FORMAT),
-            'interaction_day': interaction_date.strftime(config.DAY_FORMAT),
+#            'previous_interaction_date': previous_interaction_date.strftime(config.DATE_TIME_FORMAT),            
+            'interaction_month': interaction_date.strftime(config.MONTH_FORMAT),
         }
 
         interactions.append(interaction)  # Add the interaction to the list
@@ -110,10 +114,10 @@ def generate_user_interactions_window_agg(num_interactions: int, users: List[Dic
         interaction_date = video_upload_date + timedelta(hours=random.randint(0, 100))
         interaction = {
             'user_id': user['user_id'],
-            'video_category': video['category'],
+            'category_id': video['category_id'],
 
             'window_end_time': interaction_date.strftime(config.DATE_TIME_FORMAT),
-            'interaction_day': interaction_date.strftime(config.DAY_FORMAT),
+            'interaction_month': interaction_date.strftime(config.MONTH_FORMAT),
 
             "like_count": random.randint(0, 100),
             "dislike_count": random.randint(0, 100),
@@ -168,9 +172,10 @@ def generate_video_interactions_window_agg(num_interactions: int, users: List[Di
         interaction_date = video_upload_date + timedelta(hours=random.randint(0, 100))
         interaction = {
             'video_id': video['video_id'],
+            'category_id': video['category_id'],
 
             'window_end_time': interaction_date.strftime(config.DATE_TIME_FORMAT),
-            'interaction_day': interaction_date.strftime(config.DAY_FORMAT),
+            'interaction_month': interaction_date.strftime(config.MONTH_FORMAT),
 
             "like_count": random.randint(0, 100),
             "dislike_count": random.randint(0, 100),

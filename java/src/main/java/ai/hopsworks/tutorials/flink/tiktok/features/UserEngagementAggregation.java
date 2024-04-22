@@ -19,8 +19,8 @@ public class UserEngagementAggregation
           accumulator) {
 
     accumulator.setUserId(record.getUserId());
-    accumulator.setInteractionDay(record.getInteractionDay());
-    accumulator.setVideoCategory(record.getVideoCategory());
+    accumulator.setInteractionMonth(record.getInteractionMonth());
+    accumulator.setCategoryId(record.getCategoryId());
 
     switch(record.getInteractionType()) {
       case "like":
@@ -52,7 +52,7 @@ public class UserEngagementAggregation
   public UserWindowAggregationSchema getResult(UserWindowAggregationSchema accumulator) {
     UserWindowAggregationSchema userWindowAggregationSchema = new UserWindowAggregationSchema();
     userWindowAggregationSchema.setUserId(accumulator.getUserId());
-    userWindowAggregationSchema.setInteractionDay(accumulator.getInteractionDay());
+    userWindowAggregationSchema.setInteractionMonth(accumulator.getInteractionMonth());
 
     userWindowAggregationSchema.setLikeCount(engagementDefaultValue(accumulator.getLikeCount()));
     userWindowAggregationSchema.setLikeCount(engagementDefaultValue(accumulator.getLikeCount()));

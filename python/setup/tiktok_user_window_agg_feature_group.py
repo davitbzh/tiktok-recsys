@@ -8,7 +8,7 @@ fs = project.get_feature_store()
 
 features = [
     Feature(name="user_id", type="string"),
-    Feature(name="video_category", type="string"),
+    Feature(name="category_id", type="bigint"),
 
     Feature(name="like_count", type="bigint"),
     Feature(name="dislike_count", type="bigint"),
@@ -18,7 +18,7 @@ features = [
     Feature(name="skip_count", type="bigint"),
     Feature(name="total_watch_time", type="bigint"),
 
-    Feature(name="interaction_day", type="string"),
+    Feature(name="interaction_month", type="string"),
     Feature(name="window_end_time", type="timestamp"),
 ]
 

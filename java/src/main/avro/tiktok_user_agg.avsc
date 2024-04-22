@@ -11,7 +11,24 @@
             ]
         },
         {
-            "name": "video_category",
+            "name": "category_id",
+            "type": [
+                "null",
+                "long"
+            ]
+        },
+        {
+            "name": "window_end_time",
+            "type": [
+                "null",
+                {
+                    "type": "long",
+                    "logicalType": "timestamp-micros"
+                }
+            ]
+        },
+        {
+            "name": "interaction_month",
             "type": [
                 "null",
                 "string"
@@ -64,23 +81,6 @@
             "type": [
                 "null",
                 "long"
-            ]
-        },
-        {
-            "name": "interaction_day",
-            "type": [
-                "null",
-                "string"
-            ]
-        },
-        {
-            "name": "window_end_time",
-            "type": [
-                "null",
-                {
-                    "type": "long",
-                    "logicalType": "timestamp-micros"
-                }
             ]
         }
     ]

@@ -19,10 +19,6 @@ pip install -r requirements.txt
 
 Once you have the above, define the following environment variable:
 
-```bash
-export HOPSWORKS_API_KEY=REPLACE_WITH_YOUR_HOPSWORKS_API_KEY
-```
-
 ## Define env variables
 ```bash
 export HOPSWORKS_HOST=REPLACE_WITH_YOUR_HOPSWORKS_CLUSTER_HOST
@@ -43,7 +39,7 @@ python ./setup/tiktok_video_window_agg_feature_group.py
 Now you are ready to run a streaming pipeline using Bytewax and write real time feature data to feature group.
 
 ### Real time feature engineering in Bytewax
-To submit Bytewax pipeline and write real time features to`profiles_activity_5m` feature group execute the following command.
+To submit Bytewax pipeline and write real time features execute the following command.
 
 ```bash
 cd ~/hopsworks-tutorials/advanced_tutorials/tiktok-recsys/bytewax

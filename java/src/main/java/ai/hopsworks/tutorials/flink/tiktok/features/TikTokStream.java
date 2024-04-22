@@ -7,7 +7,7 @@ import com.logicalclocks.hsfs.flink.StreamFeatureGroup;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
-import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.assigners.SlidingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
@@ -61,7 +61,7 @@ public class TikTokStream {
         .<TikTokInteractions>forBoundedOutOfOrderness(Duration.ofSeconds(30))
         .withTimestampAssigner((event, timestamp) -> event.getInteractionDate());
 
-    DataStream<TikTokInteractions> simEvents =
+    SingleOutputStreamOperator<TikTokInteractions> simEvents =
             env.addSource(new InteractionsEventsSimulator(batchSize));
 
     simEvents.assignTimestampsAndWatermarks(customWatermark)
@@ -70,31 +70,29 @@ public class TikTokStream {
             .rebalance();
 
     // define feature aggregate streams
-    DataStream<SourceInteractions> sourceInteractions =
+    SingleOutputStreamOperator<SourceInteractions> sourceInteractions =
             simEvents
-            .keyBy(TikTokInteractions::getUserId).map(new MapFunction<TikTokInteractions, SourceInteractions>() {
-                      @Override
-                      public SourceInteractions map(TikTokInteractions tikTokInteractions) throws Exception {
-                        SourceInteractions sourceInteractions = new SourceInteractions();
-                        sourceInteractions.setInteractionId(tikTokInteractions.getInteractionId());
-                        sourceInteractions.setUserId(tikTokInteractions.getUserId());
-                        sourceInteractions.setVideoId(tikTokInteractions.getVideoId());
-                        sourceInteractions.setVideoCategory(tikTokInteractions.getVideoCategory());
-                        sourceInteractions.setInteractionType(tikTokInteractions.getInteractionType());
-                        sourceInteractions.setInteractionDate(tikTokInteractions.getInteractionDate() * 1000);
-                        sourceInteractions.setInteractionDay(tikTokInteractions.getInteractionDay());
-                        sourceInteractions.setWatchTime(tikTokInteractions.getWatchTime());
-                        return sourceInteractions;
-                      }
-                    });
+            .keyBy(TikTokInteractions::getUserId)
+                    .map((MapFunction<TikTokInteractions, SourceInteractions>) tikTokInteractions -> {
+              SourceInteractions sourceInteractions1 = new SourceInteractions();
+              sourceInteractions1.setInteractionId(tikTokInteractions.getInteractionId());
+              sourceInteractions1.setUserId(tikTokInteractions.getUserId());
+              sourceInteractions1.setVideoId(tikTokInteractions.getVideoId());
+              sourceInteractions1.setCategoryId(tikTokInteractions.getCategoryId());
+              sourceInteractions1.setInteractionType(tikTokInteractions.getInteractionType());
+              sourceInteractions1.setInteractionDate(tikTokInteractions.getInteractionDate() * 1000);
+              sourceInteractions1.setInteractionMonth(tikTokInteractions.getInteractionMonth());
+              sourceInteractions1.setWatchTime(tikTokInteractions.getWatchTime());
+              return sourceInteractions1;
+            });
 
-    DataStream<UserWindowAggregationSchema> userAggregationStream =
+    SingleOutputStreamOperator<UserWindowAggregationSchema> userAggregationStream =
             simEvents.assignTimestampsAndWatermarks(customWatermark)
             .keyBy(TikTokInteractions::getUserId)
             .window(SlidingEventTimeWindows.of(Time.minutes(windowSizeMinutes), Time.minutes(slideSizeMinutes)))
             .aggregate(new UserEngagementAggregation(), new UserEngagementProcessWindow());
 
-    DataStream<VideoWindowAggregationSchema> videoAggregationStream =
+    SingleOutputStreamOperator<VideoWindowAggregationSchema> videoAggregationStream =
             simEvents.assignTimestampsAndWatermarks(customWatermark)
             .keyBy(TikTokInteractions::getVideoId)
             .window(SlidingEventTimeWindows.of(Time.minutes(windowSizeMinutes), Time.minutes(slideSizeMinutes)))

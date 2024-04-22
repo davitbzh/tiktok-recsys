@@ -7,11 +7,11 @@ project = hopsworks.login()
 fs = project.get_feature_store()
 
 features = [
-    Feature(name="interaction_day", type="string"),
+    Feature(name="interaction_month", type="string"),
     Feature(name="interaction_id", type="string"),
     Feature(name="user_id", type="string"),
     Feature(name="video_id", type="string"),
-    Feature(name="video_category", type="string"),
+    Feature(name="category_id", type="bigint"),
     Feature(name="interaction_type", type="string"),
     Feature(name="watch_time", type="bigint"),
     Feature(name="interaction_date", type="timestamp"),

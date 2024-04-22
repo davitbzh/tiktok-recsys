@@ -25,10 +25,10 @@
             ]
         },
         {
-            "name": "video_category",
+            "name": "category_id",
             "type": [
                 "null",
-                "string"
+                "long"
             ]
         },
         {
@@ -56,7 +56,7 @@
             ]
         },
         {
-            "name": "interaction_day",
+            "name": "interaction_month",
             "type": [
                 "null",
                 "string"

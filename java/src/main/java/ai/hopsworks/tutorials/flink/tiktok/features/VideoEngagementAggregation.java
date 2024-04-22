@@ -18,7 +18,7 @@ public class VideoEngagementAggregation
   public VideoWindowAggregationSchema add(TikTokInteractions record, VideoWindowAggregationSchema
           accumulator) {
     accumulator.setVideoId(record.getVideoId());
-    accumulator.setInteractionDay(record.getInteractionDay());
+    accumulator.setInteractionMonth(record.getInteractionMonth());
 
     switch(String.valueOf(record.getInteractionType())) {
       case "like":
@@ -48,7 +48,7 @@ public class VideoEngagementAggregation
   public VideoWindowAggregationSchema getResult(VideoWindowAggregationSchema accumulator) {
     VideoWindowAggregationSchema videoWindowAggregationSchema = new VideoWindowAggregationSchema();
     videoWindowAggregationSchema.setVideoId(accumulator.getVideoId());
-    videoWindowAggregationSchema.setInteractionDay(accumulator.getInteractionDay());
+    videoWindowAggregationSchema.setInteractionMonth(accumulator.getInteractionMonth());
 
     videoWindowAggregationSchema.setLikeCount(engagementDefaultValue(accumulator.getLikeCount()));
     videoWindowAggregationSchema.setLikeCount(engagementDefaultValue(accumulator.getLikeCount()));
