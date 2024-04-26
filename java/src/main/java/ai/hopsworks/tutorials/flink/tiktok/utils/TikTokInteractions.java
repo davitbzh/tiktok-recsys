@@ -8,6 +8,7 @@ public class TikTokInteractions {
     private String interactionType;
     private Long watchTime;
     private Long interactionDate;
+
     private String interactionMonth;
 
 

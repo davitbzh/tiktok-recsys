@@ -49,10 +49,7 @@
             "name": "interaction_date",
             "type": [
                 "null",
-                {
-                    "type": "long",
-                    "logicalType": "timestamp-micros"
-                }
+                "long"
             ]
         },
         {

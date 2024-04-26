@@ -4,7 +4,7 @@ import random
 from datetime import datetime, timedelta
 from typing import List, Dict, Any
 from streaming import config
-
+import numpy as np
 
 def generate_interactions(num_interactions: int, users: List[Dict[str, str]], videos: List[Dict[str, str]]) -> List[
     Dict[str, Any]]:
@@ -64,9 +64,8 @@ def generate_interactions(num_interactions: int, users: List[Dict[str, str]], vi
             'category_id': video['category_id'],
             'interaction_type': random.choices(interaction_types, weights=weights, k=1)[0],
             'watch_time': watch_time,
-#            'watched_till_end': 1 if watch_time >= video['video_length'] else 0,           
             'interaction_date': interaction_date.strftime(config.DATE_TIME_FORMAT),
-#            'previous_interaction_date': previous_interaction_date.strftime(config.DATE_TIME_FORMAT),            
+            'previous_interaction_date': previous_interaction_date.strftime(config.DATE_TIME_FORMAT),            
             'interaction_month': interaction_date.strftime(config.MONTH_FORMAT),
         }
 
@@ -190,3 +189,25 @@ def generate_video_interactions_window_agg(num_interactions: int, users: List[Di
         interactions.append(interaction)  # Add the interaction to the list
 
     return interactions
+
+# Calculate ondemand features the sine and cosine of the month of interaction date
+def month_sine(interaction_date):     
+        # Calculate a coefficient for adjusting the periodicity of the month
+        coef = np.random.uniform(0, 2 * np.pi) / 12
+
+        #month_of_purchase = datetime.strptime(transaction_date, "%Y-%m-%dT%H:%M:%S").month
+        month_of_interaction = interaction_date.month 
+    
+        # Calculate the sine and cosine components for the month_of_purchase
+        return float(np.sin(month_of_interaction * coef)) 
+
+def month_cosine(interaction_date):     
+        # Calculate a coefficient for adjusting the periodicity of the month
+        coef = np.random.uniform(0, 2 * np.pi) / 12
+
+        #month_of_purchase = datetime.strptime(transaction_date, "%Y-%m-%dT%H:%M:%S").month
+        month_of_interaction = interaction_date.month 
+    
+        # Calculate the sine and cosine components for the month_of_purchase
+        return float(np.cos(month_of_interaction * coef))
+
