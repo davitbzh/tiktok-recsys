@@ -1,38 +1,38 @@
 package ai.hopsworks.tutorials.flink.tiktok.utils;
 
 public class TikTokInteractions {
-    private String interactionId;
-    private String userId;
-    private String videoId;
+    private Long interactionId;
+    private Long userId;
+    private Long videoId;
     private Long categoryId;
     private String interactionType;
     private Long watchTime;
     private Long interactionDate;
-
     private String interactionMonth;
+    private Long processStart;
 
 
-    public void setInteractionId(String interactionId) {
+    public void setInteractionId(Long interactionId) {
         this.interactionId = interactionId;
     }
 
-    public String getInteractionId() {
+    public Long getInteractionId() {
         return interactionId;
     }
 
-    public void setUserId(String userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 
-    public String getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setVideoId(String videoId) {
+    public void setVideoId(Long videoId) {
         this.videoId = videoId;
     }
 
-    public String getVideoId() {
+    public Long getVideoId() {
         return videoId;
     }
 
@@ -74,5 +74,13 @@ public class TikTokInteractions {
 
     public String getInteractionMonth() {
         return interactionMonth;
+    }
+
+    public void setProcessStart(Long processStart) {
+        this.processStart = processStart;
+    }
+
+    public Long getProcessStart() {
+        return processStart;
     }
 }

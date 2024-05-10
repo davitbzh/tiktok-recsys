@@ -7,7 +7,7 @@
             "name": "user_id",
             "type": [
                 "null",
-                "string"
+                "long"
             ]
         },
         {

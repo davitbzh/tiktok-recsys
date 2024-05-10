@@ -15,7 +15,16 @@ def setup_cluster(flink_cluster_api, args):
                         'taskmanager.heap.size': args.task_manager_mbs, 'jobType': 'FLINK', "appName": args.job}
 
     # producer job
-    return flink_cluster_api.setup_cluster(name=args.job, config=flink_job_config)
+    try:
+        producer_cluster = flink_cluster_api.get_cluster(args.job)
+        flink_cluster_jobs = producer_cluster.get_jobs()
+        for job_id in flink_cluster_jobs:
+            job_state = producer_cluster.job_state(job_id)
+            if job_state == "RUNNING":
+                flink_cluster_jobs.stop_job(job_id=job_id)
+        return producer_cluster
+    except:
+        return flink_cluster_api.setup_cluster(name=args.job, config=flink_job_config)
 
 
 if __name__ == "__main__":
@@ -34,12 +43,12 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--job_manager_mbs",
-        default=2048,
+        default=4048,
         help="Memory of the Flink job manager in MB",
     )
     parser.add_argument(
         "--task_manager_mbs",
-        default=2048,
+        default=4048,
         help="Memory of the Flink task managers in MB",
     )
     parser.add_argument("--slots", default=1, help="Number of slots per TaskManager")

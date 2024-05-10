@@ -9,7 +9,6 @@ import org.apache.avro.specific.SpecificDatumReader;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.connector.kafka.source.reader.deserializer.KafkaRecordDeserializationSchema;
-import org.apache.flink.runtime.metrics.DescriptiveStatisticsHistogram;
 import org.apache.flink.streaming.connectors.kafka.KafkaDeserializationSchema;
 import org.apache.flink.util.Collector;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -18,31 +17,21 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.Instant;
 
-public class InteractionsEventKafkaSource implements KafkaDeserializationSchema<SourceInteractions>,
-        KafkaRecordDeserializationSchema<SourceInteractions> {
-
-    private static final int EVENT_TIME_LAG_WINDOW_SIZE = 10_000;
-
-    private transient DescriptiveStatisticsHistogram eventTimeLag;
+public class InteractionsEventKafkaSource implements KafkaDeserializationSchema<TikTokInteractions>,
+        KafkaRecordDeserializationSchema<TikTokInteractions> {
 
     @Override
     public void open(DeserializationSchema.InitializationContext context) throws Exception {
         KafkaRecordDeserializationSchema.super.open(context);
-        eventTimeLag =
-                context
-                        .getMetricGroup()
-                        .histogram(
-                                "interactionsEventKafkaSourceLag",
-                                new DescriptiveStatisticsHistogram(EVENT_TIME_LAG_WINDOW_SIZE));
     }
 
     @Override
-    public boolean isEndOfStream(SourceInteractions sourceInteractions) {
+    public boolean isEndOfStream(TikTokInteractions sourceInteractions) {
         return false;
     }
 
     @Override
-    public SourceInteractions deserialize(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
+    public TikTokInteractions deserialize(ConsumerRecord<byte[], byte[]> consumerRecord) throws Exception {
         byte[] messageKey = consumerRecord.key();
         byte[] message = consumerRecord.value();
         long offset = consumerRecord.offset();
@@ -53,20 +42,37 @@ public class InteractionsEventKafkaSource implements KafkaDeserializationSchema<
         DatumReader<SourceInteractions> userDatumReader = new SpecificDatumReader<>(sourceInteractions.getSchema());
         BinaryDecoder decoder = DecoderFactory.get().directBinaryDecoder(in, null);
         sourceInteractions = userDatumReader.read(null, decoder);
-        eventTimeLag.update(Instant.now().toEpochMilli() - sourceInteractions.getInteractionDate());
-        return sourceInteractions;
+
+        TikTokInteractions interactions = getTikTokInteractions(sourceInteractions);
+
+        return interactions;
+    }
+
+    private static TikTokInteractions getTikTokInteractions(SourceInteractions sourceInteractions) {
+        TikTokInteractions interactions = new TikTokInteractions();
+        interactions.setInteractionId(sourceInteractions.getInteractionId());
+        interactions.setUserId(sourceInteractions.getUserId());
+        interactions.setVideoId(sourceInteractions.getVideoId());
+        interactions.setCategoryId(sourceInteractions.getCategoryId());
+        interactions.setInteractionType(String.valueOf(sourceInteractions.getInteractionType()));
+        interactions.setInteractionDate(sourceInteractions.getInteractionDate());
+        interactions.setInteractionMonth(String.valueOf(sourceInteractions.getInteractionMonth()));
+        interactions.setWatchTime(sourceInteractions.getWatchTime());
+        return interactions;
     }
 
     @SneakyThrows
     @Override
-    public void deserialize(ConsumerRecord<byte[], byte[]> consumerRecord, Collector<SourceInteractions> collector)
+    public void deserialize(ConsumerRecord<byte[], byte[]> consumerRecord, Collector<TikTokInteractions> collector)
             throws IOException {
-        SourceInteractions sourceInteractions = deserialize(consumerRecord);
+        long deserializeStart = Instant.now().toEpochMilli();
+        TikTokInteractions sourceInteractions = deserialize(consumerRecord);
+        sourceInteractions.setProcessStart(deserializeStart);
         collector.collect(sourceInteractions);
     }
 
     @Override
-    public TypeInformation<SourceInteractions> getProducedType() {
-        return TypeInformation.of(SourceInteractions.class);
+    public TypeInformation<TikTokInteractions> getProducedType() {
+        return TypeInformation.of(TikTokInteractions.class);
     }
 }

@@ -6,27 +6,33 @@ import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 
-public class UserEngagementProcessWindow extends ProcessWindowFunction<UserWindowAggregationSchema, UserWindowAggregationSchema, String, TimeWindow> {
+import java.time.Instant;
+
+public class UserEngagementProcessWindow extends ProcessWindowFunction<UserWindowAggregationSchema, UserWindowAggregationSchema, Long, TimeWindow> {
 
   private static final int EVENT_TIME_LAG_WINDOW_SIZE = 10_000;
 
   private transient DescriptiveStatisticsHistogram eventTimeLag;
 
   @Override
-  public void process(String userId, ProcessWindowFunction<UserWindowAggregationSchema, UserWindowAggregationSchema,
-          String, TimeWindow>.Context context, Iterable<UserWindowAggregationSchema> iterable, Collector<UserWindowAggregationSchema> collector) {
+  public void process(Long userId, ProcessWindowFunction<UserWindowAggregationSchema, UserWindowAggregationSchema,
+          Long, TimeWindow>.Context context, Iterable<UserWindowAggregationSchema> iterable, Collector<UserWindowAggregationSchema> collector) {
 
     UserWindowAggregationSchema record = iterable.iterator().next();
+
+    // get process start timestamp
+    Long processStart =  record.getWindowEndTime();
 
     // window end
     record.setWindowEndTime(context.window().getEnd()  * 1000);
 
     // here it ends
-    //eventTimeLag.update(System.currentTimeMillis() - context.window().getEnd());
     collector.collect(record);
+
+    // measure latency
+    //eventTimeLag.update(Instant.now().toEpochMilli() - processStart);
   }
 
-  /*
   @Override
   public void open(Configuration parameters) throws Exception {
     super.open(parameters);
@@ -38,5 +44,4 @@ public class UserEngagementProcessWindow extends ProcessWindowFunction<UserWindo
                             "userEngagementEventTimeLag",
                             new DescriptiveStatisticsHistogram(EVENT_TIME_LAG_WINDOW_SIZE));
   }
-   */
 }

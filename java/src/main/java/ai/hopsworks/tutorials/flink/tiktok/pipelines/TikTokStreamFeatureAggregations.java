@@ -38,33 +38,35 @@ public class TikTokStreamFeatureAggregations {
     //int parallelism = 25;
     //int batchSize = 25;
 
-    int parallelism = 1;
-    int recordsPerSecond = 10;
+    int parallelism = 80;
+    Long recordsPerSecond = 1000000L;
 
     StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
     env.setParallelism(parallelism);
 
     // Setup the sliding window aggregations 5, 10, 60 minutes
-    interactionSlidingWindow( env,60, 30, parallelism, recordsPerSecond);
+    interactionSlidingWindow( env,60, 30, recordsPerSecond, parallelism);
     //interactionSlidingWindow( env,10, 5, 1, 1);
     //interactionSlidingWindow( env,60, 10, 1, 1);
 
     env.execute(JOB_NAME);
-    env.enableCheckpointing(CHECKPOINTING_INTERVAL_MS);
+    //env.enableCheckpointing(CHECKPOINTING_INTERVAL_MS);
     env.setRestartStrategy(RestartStrategies.noRestart());
   }
 
   private void interactionSlidingWindow( StreamExecutionEnvironment env,
                                         int windowSizeMinutes,
                                         int slideSizeMinutes,
-                                        int recordsPerSecond,
+                                        Long recordsPerSecond,
                                         int parallelism) throws Exception {
 
 
     // get or create stream feature group
     StreamFeatureGroup interactionsFeatureGroup = featureStore.getStreamFeatureGroup("interactions", 1);
+    /*
     StreamFeatureGroup userWindowAgg = featureStore.getStreamFeatureGroup("user_window_agg_1h", 1);
     StreamFeatureGroup videoWindowAgg = featureStore.getStreamFeatureGroup("video_window_agg_1h", 1);
+     */
 
     WatermarkStrategy<TikTokInteractions> customWatermark = WatermarkStrategy
         .<TikTokInteractions>forBoundedOutOfOrderness(Duration.ofSeconds(30))
@@ -102,6 +104,7 @@ public class TikTokStreamFeatureAggregations {
               return sourceInteractions1;
             });
 
+    /*
     SingleOutputStreamOperator<UserWindowAggregationSchema> userAggregationStream =
             simEvents.assignTimestampsAndWatermarks(customWatermark)
             .keyBy(TikTokInteractions::getUserId)
@@ -114,9 +117,12 @@ public class TikTokStreamFeatureAggregations {
             .window(SlidingEventTimeWindows.of(Time.minutes(windowSizeMinutes), Time.minutes(slideSizeMinutes)))
             .aggregate(new VideoEngagementAggregation(), new VideoEngagementProcessWindow());
 
+     */
     // insert streams
     interactionsFeatureGroup.insertStream(sourceInteractions);
+    /*
     userWindowAgg.insertStream(userAggregationStream);
     videoWindowAgg.insertStream(videoAggregationStream);
+     */
   }
 }

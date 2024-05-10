@@ -8,7 +8,6 @@ import com.logicalclocks.hsfs.flink.FeatureStore;
 import com.logicalclocks.hsfs.flink.HopsworksConnection;
 import com.logicalclocks.hsfs.flink.StreamFeatureGroup;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
-import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.connector.kafka.source.KafkaSource;
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer;
@@ -38,7 +37,7 @@ public class TikTokStreamFeatureAggKafka {
 
   public void stream() throws Exception {
 
-    int parallelism = 1;
+    int parallelism = 40;
     String sourceTopic = "live_interactions";
 
     StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -61,78 +60,58 @@ public class TikTokStreamFeatureAggKafka {
 
 
     // get or create stream feature group
-    StreamFeatureGroup interactionsFeatureGroup = featureStore.getStreamFeatureGroup("interactions", 1);
+    StreamFeatureGroup interactionsFeatureGroup = featureStore.getStreamFeatureGroup("interactions", 3);
+
+    /*
     StreamFeatureGroup userWindowAgg = featureStore.getStreamFeatureGroup("user_window_agg_1h", 1);
     StreamFeatureGroup videoWindowAgg = featureStore.getStreamFeatureGroup("video_window_agg_1h", 1);
+     */
 
-    WatermarkStrategy<SourceInteractions> customWatermark = WatermarkStrategy
-        .<SourceInteractions>forBoundedOutOfOrderness(Duration.ofSeconds(30))
+    WatermarkStrategy<TikTokInteractions> customWatermark = WatermarkStrategy
+        .<TikTokInteractions>forBoundedOutOfOrderness(Duration.ofSeconds(1))
         .withTimestampAssigner((event, timestamp) -> event.getInteractionDate());
 
       // define transaction source
       Properties kafkaConfig = utils.getKafkaProperties(sourceTopic);
 
-      KafkaSource<SourceInteractions> interactionsSource = KafkaSource.<SourceInteractions>builder()
+      KafkaSource<TikTokInteractions> interactionsSource = KafkaSource.<TikTokInteractions>builder()
               .setProperties(kafkaConfig)
               .setTopics(sourceTopic)
               .setStartingOffsets(OffsetsInitializer.latest())
               .setDeserializer(new InteractionsEventKafkaSource())
               .build();
 
-      DataStream<SourceInteractions> interactionEvents = env.fromSource(interactionsSource, customWatermark, "Interactions Kafka Source")
+      DataStream<TikTokInteractions> interactionEvents = env.fromSource(interactionsSource, customWatermark, "Interactions Kafka Source")
               .rescale()
               .rebalance();
 
       // define feature aggregate streams
       DataStream<SourceInteractions> interactions =
               interactionEvents
-                      .keyBy(SourceInteractions::getUserId)
-                      .map((MapFunction<SourceInteractions, SourceInteractions>) source -> {
-                        source.setInteractionDate(source.getInteractionDate() * 1000);
-                        return source;
-                      });
+                      .keyBy(TikTokInteractions::getUserId)
+                      .map(new Interactions());
 
+      /*
       DataStream<UserWindowAggregationSchema> userAggregationStream =
               interactionEvents
-                      .keyBy(SourceInteractions::getUserId)
-                      .map((MapFunction<SourceInteractions, TikTokInteractions>) source -> {
-                        TikTokInteractions tikTokInteractions = new TikTokInteractions();
-                        tikTokInteractions.setInteractionId(String.valueOf(source.getInteractionId()));
-                        tikTokInteractions.setUserId(String.valueOf(source.getUserId()));
-                        tikTokInteractions.setVideoId(String.valueOf(source.getVideoId()));
-                        tikTokInteractions.setCategoryId(source.getCategoryId());
-                        tikTokInteractions.setInteractionType(String.valueOf(source.getInteractionType()));
-                        tikTokInteractions.setInteractionDate(source.getInteractionDate());
-                        tikTokInteractions.setInteractionMonth(String.valueOf(source.getInteractionMonth()));
-                        tikTokInteractions.setWatchTime(source.getWatchTime());
-                        return tikTokInteractions;
-                      })
+                      .keyBy(TikTokInteractions::getUserId)
             .keyBy(TikTokInteractions::getUserId)
             .window(SlidingEventTimeWindows.of(Time.minutes(windowSizeMinutes), Time.minutes(slideSizeMinutes)))
             .aggregate(new UserEngagementAggregation(), new UserEngagementProcessWindow());
 
       DataStream<VideoWindowAggregationSchema> videoAggregationStream =
               interactionEvents
-                      .keyBy(SourceInteractions::getVideoId)
-                      .map((MapFunction<SourceInteractions, TikTokInteractions>) source -> {
-                          TikTokInteractions tikTokInteractions = new TikTokInteractions();
-                          tikTokInteractions.setInteractionId(String.valueOf(source.getInteractionId()));
-                          tikTokInteractions.setUserId(String.valueOf(source.getUserId()));
-                          tikTokInteractions.setVideoId(String.valueOf(source.getVideoId()));
-                          tikTokInteractions.setCategoryId(source.getCategoryId());
-                          tikTokInteractions.setInteractionType(String.valueOf(source.getInteractionType()));
-                          tikTokInteractions.setInteractionDate(source.getInteractionDate());
-                          tikTokInteractions.setInteractionMonth(String.valueOf(source.getInteractionMonth()));
-                          tikTokInteractions.setWatchTime(source.getWatchTime());
-                          return tikTokInteractions;
-                      })
+                      .keyBy(TikTokInteractions::getVideoId)
             .keyBy(TikTokInteractions::getVideoId)
             .window(SlidingEventTimeWindows.of(Time.minutes(windowSizeMinutes), Time.minutes(slideSizeMinutes)))
             .aggregate(new VideoEngagementAggregation(), new VideoEngagementProcessWindow());
+       */
 
-    // insert streams
-    interactionsFeatureGroup.insertStream(interactions);
-    userWindowAgg.insertStream(userAggregationStream);
-    videoWindowAgg.insertStream(videoAggregationStream);
+      // insert streams
+      interactionsFeatureGroup.insertStream(interactions);
+      /*
+      userWindowAgg.insertStream(userAggregationStream);
+      videoWindowAgg.insertStream(videoAggregationStream);
+       */
   }
 }

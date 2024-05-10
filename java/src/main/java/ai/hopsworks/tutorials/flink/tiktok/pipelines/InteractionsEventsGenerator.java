@@ -26,7 +26,7 @@ import java.util.Properties;
 
 public class InteractionsEventsGenerator {
     Utils utils = new Utils();
-    public void run(String topicName, Integer recordsPerSecond, Integer parallelism) throws Exception {
+    public void run(String topicName, Long recordsPerSecond, Integer parallelism) throws Exception {
 
         // set up streaming execution environment
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -43,9 +43,10 @@ public class InteractionsEventsGenerator {
                 env.fromSource(generatorSource,
                                 WatermarkStrategy.noWatermarks(),
                                 "Generator Source")
-                        .setParallelism(parallelism)
+                        //.setParallelism(parallelism)
                         .rescale()
                         .rebalance()
+                        .keyBy(TikTokInteractions::getUserId)
                         .map(new MapFunction<TikTokInteractions, SourceInteractions>() {
                             @Override
                             public SourceInteractions map(TikTokInteractions tikTokInteractions) throws Exception {
@@ -101,7 +102,7 @@ public class InteractionsEventsGenerator {
         CommandLine commandLine = parser.parse(options, args);
 
         String topicName = commandLine.getOptionValue("topicName");
-        Integer recordsPerSecond = Integer.parseInt(commandLine.getOptionValue("recordsPerSecond"));
+        Long recordsPerSecond = Long.parseLong(commandLine.getOptionValue("recordsPerSecond"));
         Integer parallelism = Integer.parseInt(commandLine.getOptionValue("parallelism"));
 
         InteractionsEventsGenerator interactionsEventsProducer = new InteractionsEventsGenerator();

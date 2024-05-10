@@ -3,6 +3,8 @@ package  ai.hopsworks.tutorials.flink.tiktok.features;
 import ai.hopsworks.tutorials.flink.tiktok.utils.TikTokInteractions;
 import org.apache.flink.api.common.functions.AggregateFunction;
 
+import java.time.Instant;
+
 public class UserEngagementAggregation
         implements AggregateFunction<TikTokInteractions, UserWindowAggregationSchema, UserWindowAggregationSchema> {
 
@@ -21,6 +23,9 @@ public class UserEngagementAggregation
     accumulator.setUserId(record.getUserId());
     accumulator.setInteractionMonth(record.getInteractionMonth());
     accumulator.setCategoryId(record.getCategoryId());
+
+    // to measure latency, will be overwritten later
+    accumulator.setWindowEndTime(record.getProcessStart());
 
     switch(record.getInteractionType()) {
       case "like":
@@ -61,7 +66,6 @@ public class UserEngagementAggregation
     userWindowAggregationSchema.setShareCount(engagementDefaultValue(accumulator.getShareCount()));
     userWindowAggregationSchema.setSkipCount(engagementDefaultValue(accumulator.getSkipCount()));
     userWindowAggregationSchema.setTotalWatchTime(engagementDefaultValue(accumulator.getTotalWatchTime()));
-
     return userWindowAggregationSchema;
   }
   

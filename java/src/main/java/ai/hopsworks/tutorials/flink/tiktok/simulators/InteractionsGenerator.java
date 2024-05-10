@@ -4,13 +4,8 @@ import ai.hopsworks.tutorials.flink.tiktok.utils.TikTokInteractions;
 import org.apache.flink.api.connector.source.SourceReaderContext;
 import org.apache.flink.connector.datagen.source.GeneratorFunction;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -22,15 +17,9 @@ public class InteractionsGenerator implements GeneratorFunction<Long, TikTokInte
     private final List<String> interactionTypes = Arrays.asList("like", "view", "dislike", "comment", "share", "skip");
     private final List<Long> videoCategories = Arrays.asList(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 11L);
 
-    private final List<String[]> interactionIds;
-
     SimpleDateFormat monthFormat = new SimpleDateFormat("yyyy-MM");
 
 
-    public InteractionsGenerator() throws IOException {
-        this.interactionIds = readInteractionIds();
-
-    }
     @Override
     public void open(SourceReaderContext readerContext) throws Exception {
         GeneratorFunction.super.open(readerContext);
@@ -43,31 +32,27 @@ public class InteractionsGenerator implements GeneratorFunction<Long, TikTokInte
 
     @Override
     public TikTokInteractions map(Long aLong) throws Exception {
-        return interactionEventGenerator(interactionIdsGenerator(),
+        return interactionEventGenerator(interactionIdGenerator(), userIdGenerator(), videoIdGenerator(),
                 videoCategoryTypeGenerator(), interactionTypeGenerator(),
                 watchTimeGenerator());
     }
 
-    private List<String[]> readInteractionIds() throws IOException {
-        String interactionIdsPath = "https://repo.hops.works/dev/davit/tiktok_recsys/interaction_ids.csv";
-        URL oracle = new URL(interactionIdsPath);
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(oracle.openStream()));
-
-        String inputLine;
-        List<String[]> ids =  new ArrayList<>();
-        int lineCount = 0;
-        while ((inputLine = in.readLine()) != null && lineCount <= 1000){
-            ids.add(inputLine.split(","));
-            lineCount++;
-        }
-
-        in.close();
-        return ids;
+    private Long interactionIdGenerator() {
+        long leftLimit = 0L;
+        long rightLimit = 100000000L;
+        return leftLimit + (long) (Math.random() * (rightLimit - leftLimit));
     }
 
-    private String[] interactionIdsGenerator() {
-        return this.interactionIds.get(randomNumber.nextInt(this.interactionIds.size()));
+    private Long userIdGenerator() {
+        long leftLimit = 0L;
+        long rightLimit = 100000000L;
+        return leftLimit + (long) (Math.random() * (rightLimit - leftLimit));
+    }
+
+    private Long videoIdGenerator() {
+        long leftLimit = 0L;
+        long rightLimit = 100000000L;
+        return leftLimit + (long) (Math.random() * (rightLimit - leftLimit));
     }
 
     private String interactionTypeGenerator() {
@@ -90,13 +75,14 @@ public class InteractionsGenerator implements GeneratorFunction<Long, TikTokInte
         tikTokInteractions.setInteractionMonth(this.monthFormat.format(timestamp));
     }
 
-    private TikTokInteractions interactionEventGenerator(String[] ids, Long videoCategory, String interactionType,
-                                                         Long watchTime)
+    private TikTokInteractions interactionEventGenerator(Long interactionId, Long userId, Long videoId,
+                                                               Long videoCategory, String interactionType,
+                                                               Long watchTime)
     {
         TikTokInteractions tikTokInteractions = new TikTokInteractions();
-        tikTokInteractions.setInteractionId(ids[0]);
-        tikTokInteractions.setUserId(ids[1]);
-        tikTokInteractions.setVideoId(ids[2]);
+        tikTokInteractions.setInteractionId(interactionId);
+        tikTokInteractions.setUserId(userId);
+        tikTokInteractions.setVideoId(videoId);
         tikTokInteractions.setCategoryId(videoCategory);
         tikTokInteractions.setInteractionType(interactionType);
         tikTokInteractions.setWatchTime(watchTime);
