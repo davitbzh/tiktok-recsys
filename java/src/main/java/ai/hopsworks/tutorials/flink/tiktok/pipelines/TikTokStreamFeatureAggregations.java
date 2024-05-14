@@ -38,7 +38,7 @@ public class TikTokStreamFeatureAggregations {
     //int parallelism = 25;
     //int batchSize = 25;
 
-    int parallelism = 80;
+    int parallelism = 15;
     Long recordsPerSecond = 1000000L;
 
     StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
