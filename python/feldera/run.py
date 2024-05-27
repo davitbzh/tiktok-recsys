@@ -6,15 +6,18 @@ import argparse
 import hopsworks
 from hsfs import engine
 
+import pem
+
 # File locations
 SCRIPT_DIR = os.path.join(os.path.dirname(__file__))
 PROJECT_SQL = os.path.join(SCRIPT_DIR, "project.sql")
+
 
 # https://www.feldera.com/docs/tutorials/rest_api/
 def main():
     # Command-line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("--api-url", required=True, help="Feldera API URL (e.g., http://localhost:8080 )")
+    parser.add_argument("--api-url", required=True, help="Feldera API URL (e.g., http://localhost:8080)")
     parser.add_argument("--prepare-args", required=False, help="number of SecOps pipelines to simulate")
     parser.add_argument("--kafka-url-for-connector", required=False, default="redpanda:9092",
                         help="Kafka URL from pipeline")
@@ -125,20 +128,19 @@ def prepare_feldera(api_url, pipeline_to_redpanda_server, hopsworks_host, hopswo
     hopsworks_kafka_config = engine.get_instance()._get_kafka_config(feature_group.feature_store_id, {})
     hopsworks_kafka_config["topic"] = feature_group._online_topic_name
 
-
-    hopsworks_kafka_config.pop('ssl.ca.location') #: '/tmp/kafka_sc_2167_-1_ca_chain.pem',
-    hopsworks_kafka_config.pop('ssl.certificate.location') #: '/tmp/kafka_sc_2167_-1_client_cert.pem',
-    hopsworks_kafka_config.pop('ssl.key.location') #: '/tmp/kafka_sc_2167_-1_client_key.pem'
-
-
-    hopsworks_kafka_config["ssl.ca.pem"] = ""
-    hopsworks_kafka_config["ssl.certificate.pem"] = ""
-    hopsworks_kafka_config["ssl.key.pem"] = ""
+    """
+    ca = hopsworks_kafka_config.pop('ssl.ca.location')
+    certificate = hopsworks_kafka_config.pop('ssl.certificate.location')
+    key = hopsworks_kafka_config.pop('ssl.key.location')
+    hopsworks_kafka_config["ssl.ca.pem"] = str(pem.parse_file(ca)[0])
+    hopsworks_kafka_config["ssl.certificate.pem"] = str(pem.parse_file(certificate)[0])
+    hopsworks_kafka_config["ssl.key.pem"] = str(pem.parse_file(key)[0])
+    """
 
     headers = [
-        {"key": "projectId", "value": str(feature_group.feature_store.project_id) },
+        {"key": "projectId", "value": str(feature_group.feature_store.project_id)},
         {"key": "featureGroupId", "value": str(feature_group._id)},
-        {"key": "subjectId", "value": str(feature_group.subject["id"]) },
+        {"key": "subjectId", "value": str(feature_group.subject["id"])},
     ]
 
     hopsworks_kafka_config["headers"] = headers

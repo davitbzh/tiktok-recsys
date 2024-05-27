@@ -50,7 +50,7 @@ public class InteractionsEventKafkaSource implements KafkaDeserializationSchema<
 
     private static TikTokInteractions getTikTokInteractions(SourceInteractions sourceInteractions) {
         TikTokInteractions interactions = new TikTokInteractions();
-        interactions.setInteractionId(sourceInteractions.getInteractionId());
+        interactions.setInteractionId(sourceInteractions.getId());
         interactions.setUserId(sourceInteractions.getUserId());
         interactions.setVideoId(sourceInteractions.getVideoId());
         interactions.setCategoryId(sourceInteractions.getCategoryId());

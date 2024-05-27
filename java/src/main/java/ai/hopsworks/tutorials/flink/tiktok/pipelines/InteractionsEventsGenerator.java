@@ -34,7 +34,7 @@ public class InteractionsEventsGenerator {
 
         DataGeneratorSource<TikTokInteractions> generatorSource =
                 new DataGeneratorSource<>(
-                        new InteractionsGenerator(),
+                        new InteractionsGenerator(recordsPerSecond),
                         Long.MAX_VALUE,
                         RateLimiterStrategy.perSecond(recordsPerSecond),
                         TypeInformation.of(TikTokInteractions.class));
@@ -51,7 +51,7 @@ public class InteractionsEventsGenerator {
                             @Override
                             public SourceInteractions map(TikTokInteractions tikTokInteractions) throws Exception {
                                 SourceInteractions sourceInteractions = new SourceInteractions();
-                                sourceInteractions.setInteractionId(tikTokInteractions.getInteractionId());
+                                sourceInteractions.setId(tikTokInteractions.getInteractionId());
                                 sourceInteractions.setUserId(tikTokInteractions.getUserId());
                                 sourceInteractions.setVideoId(tikTokInteractions.getVideoId());
                                 sourceInteractions.setCategoryId(tikTokInteractions.getCategoryId());

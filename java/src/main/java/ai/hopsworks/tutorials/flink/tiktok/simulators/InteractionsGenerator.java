@@ -12,6 +12,8 @@ import java.util.Random;
 
 public class InteractionsGenerator implements GeneratorFunction<Long, TikTokInteractions> {
 
+    private final long interactionId;
+
     private final Random randomNumber = new Random();
 
     private final List<String> interactionTypes = Arrays.asList("like", "view", "dislike", "comment", "share", "skip");
@@ -19,6 +21,9 @@ public class InteractionsGenerator implements GeneratorFunction<Long, TikTokInte
 
     SimpleDateFormat monthFormat = new SimpleDateFormat("yyyy-MM");
 
+    public InteractionsGenerator(long interactionId) {
+        this.interactionId = interactionId;
+    }
 
     @Override
     public void open(SourceReaderContext readerContext) throws Exception {
@@ -32,26 +37,20 @@ public class InteractionsGenerator implements GeneratorFunction<Long, TikTokInte
 
     @Override
     public TikTokInteractions map(Long aLong) throws Exception {
-        return interactionEventGenerator(interactionIdGenerator(), userIdGenerator(), videoIdGenerator(),
+        return interactionEventGenerator(interactionId, userIdGenerator(), videoIdGenerator(),
                 videoCategoryTypeGenerator(), interactionTypeGenerator(),
                 watchTimeGenerator());
     }
 
-    private Long interactionIdGenerator() {
-        long leftLimit = 0L;
-        long rightLimit = 100000000L;
-        return leftLimit + (long) (Math.random() * (rightLimit - leftLimit));
-    }
-
     private Long userIdGenerator() {
         long leftLimit = 0L;
-        long rightLimit = 100000000L;
+        long rightLimit = 100L;
         return leftLimit + (long) (Math.random() * (rightLimit - leftLimit));
     }
 
     private Long videoIdGenerator() {
         long leftLimit = 0L;
-        long rightLimit = 100000000L;
+        long rightLimit = 100L;
         return leftLimit + (long) (Math.random() * (rightLimit - leftLimit));
     }
 

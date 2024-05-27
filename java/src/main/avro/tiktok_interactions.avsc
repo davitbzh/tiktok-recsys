@@ -4,7 +4,7 @@
     "namespace" : "ai.hopsworks.tutorials.flink.tiktok.features",
     "fields": [
         {
-            "name": "interaction_id",
+            "name": "id",
             "type": [
                 "null",
                 "long"

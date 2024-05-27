@@ -7,7 +7,7 @@ project = hopsworks.login()
 fs = project.get_feature_store()
 
 features = [
-    Feature(name="user_id", type="string"),
+    Feature(name="user_id", type="bigint"),
     Feature(name="category_id", type="bigint"),
 
     Feature(name="like_count", type="bigint"),
@@ -25,12 +25,16 @@ features = [
 user_window_agg_1h_fg = fs.create_feature_group(
     "user_window_agg_1h",
     version=1,
-    statistics_config=False,
     primary_key=["user_id"],
     partition_key=["interaction_month"],
     event_time="window_end_time",
     online_enabled=True,
     stream=True,
+    statistics_config = {
+        "enabled": True,
+        "histograms": True,
+        "correlations": True,
+    }
 )
 
 user_window_agg_1h_fg.save(features)
@@ -62,36 +66,4 @@ feature_descriptions = [
 
 for desc in feature_descriptions:
     user_window_agg_1h_fg.update_feature_description(desc["name"], desc["description"])
-
-# Define tag values
-tag = {
-    "org_level": "Managing Director",
-    "project": "MDLC",
-    "firewall": "Inside",
-    "security_review": True,
-    "reliability": "Extreme",
-    "expected_reusability": "Extreme",
-    "expected_uplift": "Extreme",
-    "draft_publish": "Publish",
-    "environment": "Production",
-    "business_function": "Sales",
-    "division": "CCB",
-    "data_source": "Kafka",
-    "pii": True,
-    "data_sensitivity": "High",
-    "business_unit": "Credit Cards"
-}
-
-# Attach the tag
-user_window_agg_1h_fg.add_tag("data_privacy_ownership", tag)
-
-
-user_window_agg_1h_fg.statistics_config = {
-    "enabled": True,
-    "histograms": True,
-    "correlations": True,
-}
-
-user_window_agg_1h_fg.update_statistics_config()
-user_window_agg_1h_fg.compute_statistics()
 

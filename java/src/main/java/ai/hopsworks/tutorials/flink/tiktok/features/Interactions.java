@@ -16,7 +16,7 @@ public class Interactions extends RichMapFunction<TikTokInteractions, SourceInte
     @Override
     public SourceInteractions map(TikTokInteractions source) throws Exception {
         SourceInteractions interactionsFeatureGroupSchema = new SourceInteractions();
-        interactionsFeatureGroupSchema.setInteractionId(source.getInteractionId());
+        interactionsFeatureGroupSchema.setId(source.getInteractionId());
         interactionsFeatureGroupSchema.setUserId(source.getUserId());
         interactionsFeatureGroupSchema.setVideoId(source.getVideoId());
         interactionsFeatureGroupSchema.setCategoryId(source.getCategoryId());

@@ -34,20 +34,14 @@ public class TikTokStreamFeatureAggregations {
     featureStore = hopsworksConnection.getFeatureStore();
   }
 
-  public void stream() throws Exception {
-    //int parallelism = 25;
-    //int batchSize = 25;
-
-    int parallelism = 15;
-    Long recordsPerSecond = 1000000L;
+  public void stream(Long maxId, Long recordsPerSecond, Integer parallelism) throws Exception {
 
     StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
     env.setParallelism(parallelism);
 
     // Setup the sliding window aggregations 5, 10, 60 minutes
-    interactionSlidingWindow( env,60, 30, recordsPerSecond, parallelism);
-    //interactionSlidingWindow( env,10, 5, 1, 1);
-    //interactionSlidingWindow( env,60, 10, 1, 1);
+    //interactionSlidingWindow( env,60, 30, maxId, recordsPerSecond, parallelism);
+    interactionSlidingWindow( env,10, 5, maxId, recordsPerSecond, parallelism);
 
     env.execute(JOB_NAME);
     //env.enableCheckpointing(CHECKPOINTING_INTERVAL_MS);
@@ -57,16 +51,14 @@ public class TikTokStreamFeatureAggregations {
   private void interactionSlidingWindow( StreamExecutionEnvironment env,
                                         int windowSizeMinutes,
                                         int slideSizeMinutes,
+                                        Long maxId,
                                         Long recordsPerSecond,
                                         int parallelism) throws Exception {
 
-
     // get or create stream feature group
     StreamFeatureGroup interactionsFeatureGroup = featureStore.getStreamFeatureGroup("interactions", 1);
-    /*
     StreamFeatureGroup userWindowAgg = featureStore.getStreamFeatureGroup("user_window_agg_1h", 1);
     StreamFeatureGroup videoWindowAgg = featureStore.getStreamFeatureGroup("video_window_agg_1h", 1);
-     */
 
     WatermarkStrategy<TikTokInteractions> customWatermark = WatermarkStrategy
         .<TikTokInteractions>forBoundedOutOfOrderness(Duration.ofSeconds(30))
@@ -74,7 +66,7 @@ public class TikTokStreamFeatureAggregations {
 
       DataGeneratorSource<TikTokInteractions> generatorSource =
               new DataGeneratorSource<>(
-                      new InteractionsGenerator(),
+                      new InteractionsGenerator(maxId),
                       Long.MAX_VALUE,
                       RateLimiterStrategy.perSecond(recordsPerSecond),
                       TypeInformation.of(TikTokInteractions.class));
@@ -93,7 +85,7 @@ public class TikTokStreamFeatureAggregations {
             .keyBy(TikTokInteractions::getUserId)
                     .map((MapFunction<TikTokInteractions, SourceInteractions>) tikTokInteractions -> {
               SourceInteractions sourceInteractions1 = new SourceInteractions();
-              sourceInteractions1.setInteractionId(tikTokInteractions.getInteractionId());
+              sourceInteractions1.setId(tikTokInteractions.getInteractionId());
               sourceInteractions1.setUserId(tikTokInteractions.getUserId());
               sourceInteractions1.setVideoId(tikTokInteractions.getVideoId());
               sourceInteractions1.setCategoryId(tikTokInteractions.getCategoryId());
@@ -104,25 +96,21 @@ public class TikTokStreamFeatureAggregations {
               return sourceInteractions1;
             });
 
-    /*
-    SingleOutputStreamOperator<UserWindowAggregationSchema> userAggregationStream =
+      DataStream<UserWindowAggregationSchema> userAggregationStream =
             simEvents.assignTimestampsAndWatermarks(customWatermark)
             .keyBy(TikTokInteractions::getUserId)
             .window(SlidingEventTimeWindows.of(Time.minutes(windowSizeMinutes), Time.minutes(slideSizeMinutes)))
             .aggregate(new UserEngagementAggregation(), new UserEngagementProcessWindow());
 
-    SingleOutputStreamOperator<VideoWindowAggregationSchema> videoAggregationStream =
+      DataStream<VideoWindowAggregationSchema> videoAggregationStream =
             simEvents.assignTimestampsAndWatermarks(customWatermark)
             .keyBy(TikTokInteractions::getVideoId)
             .window(SlidingEventTimeWindows.of(Time.minutes(windowSizeMinutes), Time.minutes(slideSizeMinutes)))
             .aggregate(new VideoEngagementAggregation(), new VideoEngagementProcessWindow());
 
-     */
     // insert streams
     interactionsFeatureGroup.insertStream(sourceInteractions);
-    /*
     userWindowAgg.insertStream(userAggregationStream);
     videoWindowAgg.insertStream(videoAggregationStream);
-     */
   }
 }
