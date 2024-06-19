@@ -1,4 +1,4 @@
-# Real time feature computation using Bytewax.
+# Real time feature computation using Apache Flink.
 
 ## Introduction
 In this guide you will learn how to create a real-time feature engineering pipeline and write real-time features 
