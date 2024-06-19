@@ -7,7 +7,7 @@ project = hopsworks.login()
 fs = project.get_feature_store()
 
 features = [
-    Feature(name="video_id", type="string"),
+    Feature(name="video_id", type="bigint"),
     Feature(name="category_id", type="bigint"),
 
     Feature(name="like_count", type="bigint"),
@@ -35,9 +35,6 @@ video_window_agg_1h_fg = fs.create_feature_group(
 
 video_window_agg_1h_fg.save(features)
 
-video_window_agg_1h_fg.materialization_job.schedule(cron_expression="0 */15 * ? * *",
-                                                    start_time=datetime.now(tz=timezone.utc))
-
 feature_descriptions = [
     {"name": "video_id", "description": "Identifier for the video."},
     {"name": "category_id", "description": "Id of the video category."},
@@ -57,24 +54,4 @@ feature_descriptions = [
 for desc in feature_descriptions:
     video_window_agg_1h_fg.update_feature_description(desc["name"], desc["description"])
 
-# Define tag values
-tag = {
-    "org_level": "Managing Director",
-    "project": "MDLC",
-    "firewall": "Inside",
-    "security_review": True,
-    "reliability": "Extreme",
-    "expected_reusability": "Extreme",
-    "expected_uplift": "Extreme",
-    "draft_publish": "Publish",
-    "environment": "Production",
-    "business_function": "Sales",
-    "division": "CCB",
-    "data_source": "Kafka",
-    "pii": False,
-    "data_sensitivity": "Low",
-    "business_unit": "Credit Cards"
-}
-
-# Attach the tag
-video_window_agg_1h_fg.add_tag("data_privacy_ownership", tag)
+# video_window_agg_1h_fg.materialization_job.schedule(cron_expression="0 */15 * ? * *", start_time=datetime.now(tz=timezone.utc))

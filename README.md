@@ -35,17 +35,6 @@ python ./setup/tiktok_user_window_agg_feature_group.py
 python ./setup/tiktok_video_window_agg_feature_group.py
 ```
 
-## Bytewax pipeline:
-Now you are ready to run a streaming pipeline using Bytewax and write real time feature data to feature group.
-
-### Real time feature engineering in Bytewax
-To submit Bytewax pipeline and write real time features execute the following command.
-
-```bash
-cd ~/hopsworks-tutorials/advanced_tutorials/tiktok-recsys/bytewax
-python -m bytewax.run "1_feature_pipeline:get_flow('$HOPSWORKS_HOST', '$HOPSWORKS_PROJECT_NAME', '$HOPSWORKS_API_KEY')" 
-```
-
 ## Flink pipeline:
 ```bash
 cd ~/hopsworks-tutorials/advanced_tutorials/tiktok-recsys/java
@@ -53,6 +42,6 @@ mvn clean package
 ```
 ### Submit Flink job
 ```bash
-python3 ./jobs_flink_client.py --host $HOPSWORKS_HOST --api_key $HOPSWORKS_API_KEY --project $HOPSWORKS_PROJECT_NAME --job tikTokStreamPipe --jar ./target/flink-tiktok-0.1.0.jar --main "ai.hopsworks.tutorials.flink.tiktok.TikTokFlink"
+python3 ./jobs_flink_client.py --host $HOPSWORKS_HOST --api_key $HOPSWORKS_API_KEY --project $HOPSWORKS_PROJECT_NAME --job tikTokInteractions --jar ./target/flink-tiktok-0.1.0.jar --main "ai.hopsworks.tutorials.flink.tiktok.TikTokFlink" --job_arguments "-maxIdRange 100 -recordsPerSecond 10 -parallelism 1"
 ```
 

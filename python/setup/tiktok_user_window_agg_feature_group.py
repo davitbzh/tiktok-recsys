@@ -7,7 +7,7 @@ project = hopsworks.login()
 fs = project.get_feature_store()
 
 features = [
-    Feature(name="user_id", type="string"),
+    Feature(name="user_id", type="bigint"),
     Feature(name="category_id", type="bigint"),
 
     Feature(name="like_count", type="bigint"),
@@ -35,8 +35,6 @@ user_window_agg_1h_fg = fs.create_feature_group(
 
 user_window_agg_1h_fg.save(features)
 
-user_window_agg_1h_fg.materialization_job.schedule(cron_expression="0 */15 * ? * *",
-                                start_time=datetime.now(tz=timezone.utc))
 
 feature_descriptions = [
     {"name": "user_id", "description": "Unique identifier for each user."},
@@ -63,24 +61,4 @@ feature_descriptions = [
 for desc in feature_descriptions:
     user_window_agg_1h_fg.update_feature_description(desc["name"], desc["description"])
 
-# Define tag values
-tag = {
-    "org_level": "Managing Director",
-    "project": "MDLC",
-    "firewall": "Inside",
-    "security_review": True,
-    "reliability": "Extreme",
-    "expected_reusability": "Extreme",
-    "expected_uplift": "Extreme",
-    "draft_publish": "Publish",
-    "environment": "Production",
-    "business_function": "Sales",
-    "division": "CCB",
-    "data_source": "Kafka",
-    "pii": True,
-    "data_sensitivity": "High",
-    "business_unit": "Credit Cards"
-}
-
-# Attach the tag
-user_window_agg_1h_fg.add_tag("data_privacy_ownership", tag)
+# user_window_agg_1h_fg.materialization_job.schedule(cron_expression="0 */15 * ? * *", start_time=datetime.now(tz=timezone.utc))

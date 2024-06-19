@@ -10,8 +10,8 @@ fs = project.get_feature_store()
 features = [
     Feature(name="interaction_month", type="string"),
     Feature(name="interaction_id", type="string"),
-    Feature(name="user_id", type="string"),
-    Feature(name="video_id", type="string"),
+    Feature(name="user_id", type="bigint"),
+    Feature(name="video_id", type="bigint"),
     Feature(name="category_id", type="bigint"),
     Feature(name="interaction_type", type="string"),
     Feature(name="watch_time", type="bigint"),
@@ -22,7 +22,7 @@ interactions_fg = fs.get_or_create_feature_group(
     name="interactions",
     description="Interactions data.",
     version=1,
-    primary_key=["interaction_id", "user_id", "video_id"],
+    primary_key=["interaction_id"],
     partition_key=["interaction_month"],
     online_enabled=True,
     event_time="interaction_date"
@@ -45,27 +45,4 @@ feature_descriptions = [
 for desc in feature_descriptions:
     interactions_fg.update_feature_description(desc["name"], desc["description"])
 
-# Define tag values
-tag = {
-    "org_level": "Managing Director",
-    "project": "MDLC",
-    "firewall": "Inside",
-    "security_review": True,
-    "reliability": "Extreme",
-    "expected_reusability": "Extreme",
-    "expected_uplift": "Extreme",
-    "draft_publish": "Publish",
-    "environment": "Production",
-    "business_function": "Sales",
-    "division": "CCB",
-    "data_source": "Kafka",
-    "pii": True,
-    "data_sensitivity": "High",
-    "business_unit": "Credit Cards"
-}
-
-# Attach the tag
-interactions_fg.add_tag("data_privacy_ownership", tag)
-
-interactions_fg.materialization_job.schedule(cron_expression="0 */15 * ? * *",
-                                             start_time=datetime.now(tz=timezone.utc))
+# interactions_fg.materialization_job.schedule(cron_expression="0 */15 * ? * *", start_time=datetime.now(tz=timezone.utc))

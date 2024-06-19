@@ -48,7 +48,7 @@ public class TikTokStreamFeatureAggregations {
     env.setRestartStrategy(RestartStrategies.noRestart());
   }
 
-  private void interactionSlidingWindow( StreamExecutionEnvironment env,
+  private void interactionSlidingWindow(StreamExecutionEnvironment env,
                                         int windowSizeMinutes,
                                         int slideSizeMinutes,
                                         Long maxId,

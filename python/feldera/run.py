@@ -125,6 +125,7 @@ def prepare_feldera(api_url, pipeline_to_redpanda_server, hopsworks_host, hopswo
     schema = feature_group.avro_schema
 
     # get kafka connection config
+    from hsfs import engine
     hopsworks_kafka_config = engine.get_instance()._get_kafka_config(feature_group.feature_store_id, {})
     hopsworks_kafka_config["topic"] = feature_group._online_topic_name
 
