@@ -1,11 +1,19 @@
 package ai.hopsworks.tutorials.flink.tiktok.pipelines;
 
-import ai.hopsworks.tutorials.flink.tiktok.features.*;
+import ai.hopsworks.tutorials.flink.tiktok.features.SourceInteractions;
+import ai.hopsworks.tutorials.flink.tiktok.features.UserWindowAggregationSchema;
+import ai.hopsworks.tutorials.flink.tiktok.features.UserEngagementAggregation;
+import ai.hopsworks.tutorials.flink.tiktok.features.UserEngagementProcessWindow;
+import ai.hopsworks.tutorials.flink.tiktok.features.VideoWindowAggregationSchema;
+import ai.hopsworks.tutorials.flink.tiktok.features.VideoEngagementAggregation;
+import ai.hopsworks.tutorials.flink.tiktok.features.VideoEngagementProcessWindow;
 import ai.hopsworks.tutorials.flink.tiktok.simulators.InteractionsGenerator;
 import ai.hopsworks.tutorials.flink.tiktok.utils.TikTokInteractions;
+
 import com.logicalclocks.hsfs.flink.FeatureStore;
 import com.logicalclocks.hsfs.flink.HopsworksConnection;
 import com.logicalclocks.hsfs.flink.StreamFeatureGroup;
+
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
@@ -13,7 +21,6 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.connector.source.util.ratelimit.RateLimiterStrategy;
 import org.apache.flink.connector.datagen.source.DataGeneratorSource;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.assigners.SlidingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
