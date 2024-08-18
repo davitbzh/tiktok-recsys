@@ -6,13 +6,16 @@ import org.apache.flink.connector.datagen.source.GeneratorFunction;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 public class InteractionsGenerator implements GeneratorFunction<Long, TikTokInteractions> {
 
-    private final long interactionId;
+    private final long maxInteractionId;
+
+    private long interactionId = 0;
 
     private final Random randomNumber = new Random();
 
@@ -21,8 +24,11 @@ public class InteractionsGenerator implements GeneratorFunction<Long, TikTokInte
 
     SimpleDateFormat monthFormat = new SimpleDateFormat("yyyy-MM");
 
-    public InteractionsGenerator(long interactionId) {
-        this.interactionId = interactionId;
+    Instant startTime;
+
+    public InteractionsGenerator(long maxInteractionId, Instant startTime) {
+        this.maxInteractionId = maxInteractionId;
+        this.startTime = startTime;
     }
 
     @Override
@@ -37,11 +43,18 @@ public class InteractionsGenerator implements GeneratorFunction<Long, TikTokInte
 
     @Override
     public TikTokInteractions map(Long aLong) throws Exception {
-        return interactionEventGenerator(interactionId, userIdGenerator(), videoIdGenerator(),
+        return interactionEventGenerator(userIdGenerator(), videoIdGenerator(),
                 videoCategoryTypeGenerator(), interactionTypeGenerator(),
                 watchTimeGenerator());
     }
 
+    private void interactionIdGenerator() {
+        if (this.interactionId == this.maxInteractionId)  {
+            this.interactionId = 0;
+        } else {
+            this.interactionId++;
+        }
+    }
     private Long userIdGenerator() {
         long leftLimit = 0L;
         long rightLimit = 100L;
@@ -69,15 +82,17 @@ public class InteractionsGenerator implements GeneratorFunction<Long, TikTokInte
     }
 
     private void timestampGenerator(TikTokInteractions tikTokInteractions){
-        Long timestamp = Instant.now().toEpochMilli();
-        tikTokInteractions.setInteractionDate(timestamp);
-        tikTokInteractions.setInteractionMonth(this.monthFormat.format(timestamp));
+        //Long timestamp = Instant.now().toEpochMilli();
+        this.startTime = this.startTime.plus(1, ChronoUnit.SECONDS);
+        tikTokInteractions.setInteractionDate(startTime.toEpochMilli());
+        tikTokInteractions.setInteractionMonth(this.monthFormat.format(startTime.toEpochMilli()));
     }
 
-    private TikTokInteractions interactionEventGenerator(Long interactionId, Long userId, Long videoId,
-                                                               Long videoCategory, String interactionType,
-                                                               Long watchTime)
-    {
+    private TikTokInteractions interactionEventGenerator(Long userId, Long videoId,Long videoCategory,
+                                                         String interactionType,  Long watchTime) {
+
+        interactionIdGenerator();
+
         TikTokInteractions tikTokInteractions = new TikTokInteractions();
         tikTokInteractions.setInteractionId(interactionId);
         tikTokInteractions.setUserId(userId);

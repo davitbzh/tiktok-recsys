@@ -26,6 +26,8 @@ import org.apache.flink.streaming.api.windowing.assigners.SlidingEventTimeWindow
 import org.apache.flink.streaming.api.windowing.time.Time;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 public class TikTokStreamFeatureAggregations {
 
@@ -62,6 +64,11 @@ public class TikTokStreamFeatureAggregations {
                                         Long recordsPerSecond,
                                         int parallelism) throws Exception {
 
+    // Define time for start
+    Instant now = Instant.now();
+    // Subtract 2 weeks from the current instant
+    Instant startTime = now.minus(7, ChronoUnit.DAYS);
+
     // get or create stream feature group
     StreamFeatureGroup interactionsFeatureGroup = featureStore.getStreamFeatureGroup("interactions", 1);
     StreamFeatureGroup userWindowAgg = featureStore.getStreamFeatureGroup("user_window_agg_1h", 1);
@@ -71,14 +78,14 @@ public class TikTokStreamFeatureAggregations {
         .<TikTokInteractions>forBoundedOutOfOrderness(Duration.ofSeconds(30))
         .withTimestampAssigner((event, timestamp) -> event.getInteractionDate());
 
-      DataGeneratorSource<TikTokInteractions> generatorSource =
+    DataGeneratorSource<TikTokInteractions> generatorSource =
               new DataGeneratorSource<>(
-                      new InteractionsGenerator(maxId),
+                      new InteractionsGenerator(maxId, startTime),
                       Long.MAX_VALUE,
                       RateLimiterStrategy.perSecond(recordsPerSecond),
                       TypeInformation.of(TikTokInteractions.class));
 
-      DataStream<TikTokInteractions> simEvents =
+    DataStream<TikTokInteractions> simEvents =
               env.fromSource(generatorSource,
                               WatermarkStrategy.noWatermarks(),
                               "Generator Source")

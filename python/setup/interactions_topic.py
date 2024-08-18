@@ -18,14 +18,14 @@ schema = {
             "name": "interaction_id",
             "type": [
                 "null",
-                "string"
+                "long"
             ]
         },
         {
             "name": "user_id",
             "type": [
                 "null",
-                "string"
+                "long"
             ]
         },
         {

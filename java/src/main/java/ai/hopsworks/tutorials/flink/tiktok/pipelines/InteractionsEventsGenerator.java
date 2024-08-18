@@ -22,11 +22,18 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Properties;
 
 public class InteractionsEventsGenerator {
     Utils utils = new Utils();
     public void run(String topicName, Long recordsPerSecond, Integer parallelism) throws Exception {
+
+        // Define time for start
+        Instant now = Instant.now();
+        // Subtract 2 weeks from the current instant
+        Instant startTime = now.minus(7, ChronoUnit.DAYS);
 
         // set up streaming execution environment
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -34,7 +41,7 @@ public class InteractionsEventsGenerator {
 
         DataGeneratorSource<TikTokInteractions> generatorSource =
                 new DataGeneratorSource<>(
-                        new InteractionsGenerator(recordsPerSecond),
+                        new InteractionsGenerator(recordsPerSecond, startTime),
                         Long.MAX_VALUE,
                         RateLimiterStrategy.perSecond(recordsPerSecond),
                         TypeInformation.of(TikTokInteractions.class));
