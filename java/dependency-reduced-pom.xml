@@ -85,39 +85,16 @@
       <url>https://archiva.hops.works/repository/Hops/</url>
     </repository>
   </repositories>
-  <dependencies>
-    <dependency>
-      <groupId>org.apache.flink</groupId>
-      <artifactId>flink-core</artifactId>
-      <version>1.17.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.flink</groupId>
-      <artifactId>flink-streaming-java</artifactId>
-      <version>1.17.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.flink</groupId>
-      <artifactId>flink-connector-kafka</artifactId>
-      <version>1.17.0</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>flink-shaded-hadoop2</artifactId>
-          <groupId>org.apache.flink</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-  </dependencies>
   <properties>
     <avro.version>1.8.2</avro.version>
     <flink.version>1.17.0</flink.version>
-    <hsfs.version>3.7.1</hsfs.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>8</maven.compiler.source>
-    <maven.compiler.target>8</maven.compiler.target>
+    <httpclient.version>4.5.6</httpclient.version>
+    <httpcore.version>4.4.13</httpcore.version>
     <junit.version>4.13.2</junit.version>
+    <guava.version>14.0.1</guava.version>
+    <maven.compiler.target>8</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <hsfs.version>3.8.0-RC5</hsfs.version>
+    <maven.compiler.source>8</maven.compiler.source>
   </properties>
 </project>

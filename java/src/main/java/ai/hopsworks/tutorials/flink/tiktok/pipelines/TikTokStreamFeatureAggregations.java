@@ -19,6 +19,7 @@ import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.connector.source.util.ratelimit.RateLimiterStrategy;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.connector.datagen.source.DataGeneratorSource;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -33,28 +34,37 @@ public class TikTokStreamFeatureAggregations {
 
   public static final int CHECKPOINTING_INTERVAL_MS = 5000;
   private static final String JOB_NAME = "TikTok Streaming Pipeline";
-
   private FeatureStore featureStore;
 
   public TikTokStreamFeatureAggregations() throws Exception {
-    //get feature store handle
-    HopsworksConnection hopsworksConnection = HopsworksConnection.builder().build();
+      //get feature store handle
+      //HopsworksConnection hopsworksConnection = HopsworksConnection.builder().build();
+      HopsworksConnection hopsworksConnection = HopsworksConnection.builder()
+              .host("93e3c930-5dfe-11ef-9746-974f83a27861.cloud.hopsworks.ai") // DNS of your Feature Store instance
+              .port(443)                                // Port to reach your Hopsworks instance, defaults to 443
+              .project("tiktok")                        // Name of your Hopsworks Feature Store project
+              .apiKeyValue("8d54GZvCvz5jJsCA.43dRVf9mXJrFQJelUe1ed4e6DfcXi1HdzIKAkxvZAcb8ZPmQg1XQ9QmtD4FBzJXk")                   // The API key to authenticate with the feature store
+              .hostnameVerification(false)               // Disable for self-signed certificates
+              .build();
 
-    featureStore = hopsworksConnection.getFeatureStore();
+      featureStore = hopsworksConnection.getFeatureStore();
   }
 
   public void stream(Long maxId, Long recordsPerSecond, Integer parallelism) throws Exception {
 
-    StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-    env.setParallelism(parallelism);
+      //StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+      Configuration conf = new Configuration();
+      // Set the modified configuration as the global configuration
+      StreamExecutionEnvironment env =  StreamExecutionEnvironment.createLocalEnvironment(conf);
+      env.setParallelism(parallelism);
 
-    // Setup the sliding window aggregations 5, 10, 60 minutes
-    //interactionSlidingWindow( env,60, 30, maxId, recordsPerSecond, parallelism);
-    interactionSlidingWindow( env,10, 5, maxId, recordsPerSecond, parallelism);
+      // Setup the sliding window aggregations 5, 10, 60 minutes
+      interactionSlidingWindow( env,60, 30, maxId, recordsPerSecond, parallelism);
+      interactionSlidingWindow( env,10, 5, maxId, recordsPerSecond, parallelism);
 
-    env.execute(JOB_NAME);
-    //env.enableCheckpointing(CHECKPOINTING_INTERVAL_MS);
-    env.setRestartStrategy(RestartStrategies.noRestart());
+      env.execute(JOB_NAME);
+      //env.enableCheckpointing(CHECKPOINTING_INTERVAL_MS);
+      env.setRestartStrategy(RestartStrategies.noRestart());
   }
 
   private void interactionSlidingWindow(StreamExecutionEnvironment env,
@@ -122,9 +132,9 @@ public class TikTokStreamFeatureAggregations {
             .window(SlidingEventTimeWindows.of(Time.minutes(windowSizeMinutes), Time.minutes(slideSizeMinutes)))
             .aggregate(new VideoEngagementAggregation(), new VideoEngagementProcessWindow());
 
-    // insert streams
-    interactionsFeatureGroup.insertStream(sourceInteractions);
-    userWindowAgg.insertStream(userAggregationStream);
-    videoWindowAgg.insertStream(videoAggregationStream);
+      // insert streams
+      interactionsFeatureGroup.insertStream(sourceInteractions);
+      userWindowAgg.insertStream(userAggregationStream);
+      videoWindowAgg.insertStream(videoAggregationStream);
   }
 }

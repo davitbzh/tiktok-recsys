@@ -1,16 +1,20 @@
 package ai.hopsworks.tutorials.flink.tiktok;
 
 import ai.hopsworks.tutorials.flink.tiktok.pipelines.TikTokStreamFeatureAggregations;
+import ai.hopsworks.tutorials.flink.tiktok.pipelines.TikTokStreamAggregationTableApi;
 
+/*
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+ */
 
 public class TikTokFlink {
     public static void main(String[] args) throws Exception {
 
+        /*
         Options options = new Options();
 
         options.addOption(Option.builder("maxIdRange")
@@ -48,7 +52,13 @@ public class TikTokFlink {
         if (commandLine.hasOption("parallelism")) {
             parallelism = Integer.parseInt(commandLine.getOptionValue("parallelism"));
         }
+        */
 
-        new TikTokStreamFeatureAggregations().stream(maxId, recordsPerSecond, parallelism);
+        Long maxId = 100L;
+        Long recordsPerSecond = 10L;
+        Integer parallelism = 1;
+        //new TikTokStreamFeatureAggregations().stream(maxId, recordsPerSecond, parallelism);
+
+        new TikTokStreamAggregationTableApi().stream(maxId, recordsPerSecond, parallelism);
     }
 }

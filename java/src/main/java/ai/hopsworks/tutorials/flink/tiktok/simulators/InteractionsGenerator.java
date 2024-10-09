@@ -16,6 +16,8 @@ public class InteractionsGenerator implements GeneratorFunction<Long, TikTokInte
     private final long maxInteractionId;
 
     private long interactionId = 0;
+    private long userId = 0;
+    private long videoId = 0;
 
     private final Random randomNumber = new Random();
 
@@ -43,8 +45,7 @@ public class InteractionsGenerator implements GeneratorFunction<Long, TikTokInte
 
     @Override
     public TikTokInteractions map(Long aLong) throws Exception {
-        return interactionEventGenerator(userIdGenerator(), videoIdGenerator(),
-                videoCategoryTypeGenerator(), interactionTypeGenerator(),
+        return interactionEventGenerator(videoCategoryTypeGenerator(), interactionTypeGenerator(),
                 watchTimeGenerator());
     }
 
@@ -55,16 +56,20 @@ public class InteractionsGenerator implements GeneratorFunction<Long, TikTokInte
             this.interactionId++;
         }
     }
-    private Long userIdGenerator() {
-        long leftLimit = 0L;
-        long rightLimit = 100L;
-        return leftLimit + (long) (Math.random() * (rightLimit - leftLimit));
+    private void userIdGenerator() {
+        if (this.userId == this.maxInteractionId)  {
+            this.userId = 0;
+        } else {
+            this.userId++;
+        }
     }
 
-    private Long videoIdGenerator() {
-        long leftLimit = 0L;
-        long rightLimit = 100L;
-        return leftLimit + (long) (Math.random() * (rightLimit - leftLimit));
+    private void videoIdGenerator() {
+        if (this.videoId == this.maxInteractionId)  {
+            this.videoId = 0;
+        } else {
+            this.videoId++;
+        }
     }
 
     private String interactionTypeGenerator() {
@@ -88,10 +93,11 @@ public class InteractionsGenerator implements GeneratorFunction<Long, TikTokInte
         tikTokInteractions.setInteractionMonth(this.monthFormat.format(startTime.toEpochMilli()));
     }
 
-    private TikTokInteractions interactionEventGenerator(Long userId, Long videoId,Long videoCategory,
-                                                         String interactionType,  Long watchTime) {
+    private TikTokInteractions interactionEventGenerator(Long videoCategory, String interactionType,  Long watchTime) {
 
         interactionIdGenerator();
+        userIdGenerator();
+        videoIdGenerator();
 
         TikTokInteractions tikTokInteractions = new TikTokInteractions();
         tikTokInteractions.setInteractionId(interactionId);
