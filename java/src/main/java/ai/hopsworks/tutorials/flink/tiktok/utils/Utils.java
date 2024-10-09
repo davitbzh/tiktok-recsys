@@ -31,5 +31,4 @@ public class Utils {
         properties.put("topic", topic);
         return properties;
     }
-
 }
