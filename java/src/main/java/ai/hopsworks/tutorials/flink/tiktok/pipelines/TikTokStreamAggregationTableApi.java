@@ -104,15 +104,15 @@ public class TikTokStreamAggregationTableApi {
         });
 
         Schema schema = Schema.newBuilder()
-                .column("interactionId", DataTypes.BIGINT())       // Long
-                .column("userId", DataTypes.BIGINT())              // Long
-                .column("videoId", DataTypes.BIGINT())             // Long
-                .column("categoryId", DataTypes.BIGINT())          // Long
-                .column("interactionType", DataTypes.STRING())      // String
-                .column("watchTime", DataTypes.BIGINT())           // Long
-                .column("interactionDate", DataTypes.TIMESTAMP_LTZ(3))     // Long
-                .column("interactionMonth", DataTypes.STRING())     // String
-                .column("processStart", DataTypes.BIGINT())        // Long
+                .column("interactionId", DataTypes.BIGINT())                         // Long
+                .column("userId", DataTypes.BIGINT())                                // Long
+                .column("videoId", DataTypes.BIGINT())                               // Long
+                .column("categoryId", DataTypes.BIGINT())                            // Long
+                .column("interactionType", DataTypes.STRING())                       // String
+                .column("watchTime", DataTypes.BIGINT())                             // Long
+                .column("interactionDate", DataTypes.TIMESTAMP_LTZ(3))      // Long
+                .column("interactionMonth", DataTypes.STRING())                      // String
+                .column("processStart", DataTypes.BIGINT())                          // Long
                 .watermark("interactionDate", "interactionDate - INTERVAL '5' SECOND")
                 .build();
 
@@ -126,11 +126,6 @@ public class TikTokStreamAggregationTableApi {
         // Register the Table
         tableEnv.createTemporaryView("interactions", interactionsSourceTable);
 
-        /*
-        Table interactionsTable = tableEnv.sqlQuery("SELECT interactionId, userId, videoId, categoryId, CAST(FROM_UNIXTIME(interactionDate / 1000) AS TIMESTAMP) as interactionDate from interactionsSource");
-        tableEnv.createTemporaryView("interactions", interactionsTable);
-        */
-
         Table interactionCountH = tableEnv.sqlQuery(
                 "SELECT " +
                         "    videoId, " +
@@ -138,8 +133,6 @@ public class TikTokStreamAggregationTableApi {
                         "    interactionDate " +
                         "FROM interactions");
         tableEnv.createTemporaryView("interactionCountH", interactionCountH);
-
-
 
         Table interactionCountD = tableEnv.sqlQuery(
                 "SELECT " +
@@ -156,7 +149,6 @@ public class TikTokStreamAggregationTableApi {
                         "    interactionDate " +
                         "FROM interactions");
         tableEnv.createTemporaryView("interactionCountW", interactionCountW);
-
 
         // Calculate average watch time using RANGE
         Table averageWatchTimeH = tableEnv.sqlQuery(
@@ -175,7 +167,6 @@ public class TikTokStreamAggregationTableApi {
                         "    interactionDate " +
                         "FROM interactions");
         tableEnv.createTemporaryView("averageWatchTimeD", averageWatchTimeD);
-
 
         Table averageWatchTimeW = tableEnv.sqlQuery(
                 "SELECT " +
@@ -204,86 +195,6 @@ public class TikTokStreamAggregationTableApi {
                         "LEFT JOIN averageWatchTimeD aD ON h.videoId = aD.videoId AND h.interactionDate = aD.interactionDate " +
                         "LEFT JOIN averageWatchTimeW aW ON h.videoId = aW.videoId AND h.interactionDate = aW.interactionDate");
 
-        /*
-        // Create video_agg view
-        Table videoAgg = tableEnv.sqlQuery(
-                        "SELECT\n" +
-                        "    videoId,\n" +
-                        "    interactionType,\n" +
-                        "    COUNT(*) OVER (\n" +
-                        "        PARTITION BY videoId\n" +
-                        "        ORDER BY interactionDate\n" +
-                        "        RANGE BETWEEN INTERVAL '1' HOUR PRECEDING AND CURRENT ROW\n" +
-                        "    ) as interaction_len_h,\n" +
-                        "    COUNT(*) OVER (\n" +
-                        "        PARTITION BY videoId\n" +
-                        "        ORDER BY interactionDate\n" +
-                        "        RANGE BETWEEN INTERVAL '1' DAY PRECEDING AND CURRENT ROW\n" +
-                        "    ) as interaction_len_d,\n" +
-                        "    COUNT(*) OVER (\n" +
-                        "        PARTITION BY videoId\n" +
-                        "        ORDER BY interactionDate\n" +
-                        "        RANGE BETWEEN INTERVAL '7' DAY PRECEDING AND CURRENT ROW\n" +
-                        "    ) as interaction_len_w,\n" +
-                        "    AVG(watchTime) OVER (\n" +
-                        "        PARTITION BY videoId\n" +
-                        "        ORDER BY interactionDate\n" +
-                        "        RANGE BETWEEN INTERVAL '1' HOUR PRECEDING AND CURRENT ROW\n" +
-                        "    ) as average_watch_time_h,\n" +
-                        "    AVG(watchTime) OVER (\n" +
-                        "        PARTITION BY videoId\n" +
-                        "        ORDER BY interactionDate\n" +
-                        "        RANGE BETWEEN INTERVAL '1' DAY PRECEDING AND CURRENT ROW\n" +
-                        "    ) as average_watch_time_d,\n" +
-                        "    AVG(watchTime) OVER (\n" +
-                        "        PARTITION BY videoId\n" +
-                        "        ORDER BY interactionDate\n" +
-                        "        RANGE BETWEEN INTERVAL '7' DAY PRECEDING AND CURRENT ROW\n" +
-                        "    ) as average_watch_time_w,\n" +
-                        "    interactionDate as hour_start\n" +
-                        "FROM interactions;"
-
-        );
-
-        // Create user_agg view
-        Table userAgg = tableEnv.sqlQuery(
-                        "SELECT\n" +
-                        "    userId,\n" +
-                        "    interactionType,\n" +
-                        "    COUNT(*) OVER (\n" +
-                        "        PARTITION BY userId\n" +
-                        "        ORDER BY interactionDate\n" +
-                        "        RANGE BETWEEN INTERVAL '1' HOUR PRECEDING AND CURRENT ROW\n" +
-                        "    ) as interaction_len_h,\n" +
-                        "    COUNT(*) OVER (\n" +
-                        "        PARTITION BY userId\n" +
-                        "        ORDER BY interactionDate\n" +
-                        "        RANGE BETWEEN INTERVAL '1' DAY PRECEDING AND CURRENT ROW\n" +
-                        "    ) as interaction_len_d,\n" +
-                        "    COUNT(*) OVER (\n" +
-                        "        PARTITION BY userId\n" +
-                        "        ORDER BY interactionDate\n" +
-                        "        RANGE BETWEEN INTERVAL '7' DAY PRECEDING AND CURRENT ROW\n" +
-                        "    ) as interaction_len_w,\n" +
-                        "    AVG(watchTime) OVER (\n" +
-                        "        PARTITION BY userId\n" +
-                        "        ORDER BY interactionDate\n" +
-                        "        RANGE BETWEEN INTERVAL '1' HOUR PRECEDING AND CURRENT ROW\n" +
-                        "    ) as average_watch_time_h,\n" +
-                        "    AVG(watchTime) OVER (\n" +
-                        "        PARTITION BY userId\n" +
-                        "        ORDER BY interactionDate\n" +
-                        "        RANGE BETWEEN INTERVAL '1' DAY PRECEDING AND CURRENT ROW\n" +
-                        "    ) as average_watch_time_d,\n" +
-                        "    AVG(watchTime) OVER (\n" +
-                        "        PARTITION BY userId\n" +
-                        "        ORDER BY interactionDate\n" +
-                        "        RANGE BETWEEN INTERVAL '7' DAY PRECEDING AND CURRENT ROW\n" +
-                        "    ) as average_watch_time_w,\n" +
-                        "    interactionDate as hour_start\n" +
-                        "FROM interactions;"
-        );
-        */
 
         // Register the views
         tableEnv.createTemporaryView("video_agg", videoAgg);
